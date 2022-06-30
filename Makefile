@@ -3,28 +3,25 @@
 # the private source data is in https://git.ethz.ch/mav-dataset/mav-dataset.git
 DATA ?= ijrr_euroc_mav_dataset
 URL ?= http://robotics.ethz.ch/~asl-datasets/$(DATA)
+# if you are using NetDrone standard then put in $WS_DIR/data
+# the use of := is important because of the include directive adds
+# to the MAKEFILE_LIST
+DATA_DIR := $(shell basename $(realpath $(dir $(lastword $(MAKEFILE_LIST)))))
+# Assuming WS_DIR is set externall by .envrc usually
+DATA_DEST := $$WS_DIR/data/$(DATA_DIR)/$(DATA)
 
-include lib/include.mk
 
 # download: download the EuRoC MAV dataset and build the dataset
 #.PHONY: download
 #download: machine_hall vicon_room1 vicon_room2
 
-# machine_hall: download the machine_hall dataset
-.PHONY: machine_hall
-#machine_hall:
-#    for room in machine_hall room1 room2; do
-#        for file in mh_01_easy mh_02_easy mh_03_medium mh_04_difficult mh_04_difficult do \
-#            for ext in bag zip; do
-#                curl -L -o "$$file.$$ext" "$(URL)/$$room/$$file).$$ext"; \
-#            done
-	#    done
-	#done
-
 ## download: recursive download all the files
 # https://stackoverflow.com/questions/11783280/downloading-all-the-files-in-a-directory-with-curl
 .PHONY: download
 download:
+	cd "$(DATA_DEST)" && \
 	wget --no-verbose --no-parent --recursive --level=3 --no-directories --no-clobber \
 		--accept-regex '.*$(DATA).*' \
 		--accept "*.zip" --accept "*.bag" "$(URL)"
+
+include lib/include.mk
